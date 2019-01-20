@@ -30,14 +30,11 @@
   padding: 20px;
   text-align: left;
   background: #f0f0f0;
+  border-bottom: 1px solid grey;
 }
 
 img {
   border: 1px solid grey;
-}
-
-.Item:nth-child(odd) {
-  background: #fafafa;
 }
 
 button {

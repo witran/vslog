@@ -31,23 +31,25 @@ function generateLogItem(id, _type) {
   };
 }
 
+function loadImg() {
+  const p = new Promise((resolve, reject) => {
+
+  });
+  const img = window.createElement
+  return p;
+}
+
 class App extends Component {
   constructor(props) {
     super(props);
 
-    const log = {};
-
-    for (let i = LAST_ID; i > LAST_ID - INITIAL_COUNT; i--) {
-      log[i] = generateLogItem(i);
-    }
-
     this.state = {
-      log,
-      firstId: LAST_ID - INITIAL_COUNT + 1,
-      lastId: LAST_ID
+      log: {},
+      firstId: null,
+      lastId: null
+      // firstId: LAST_ID - INITIAL_COUNT + 1,
+      // lastId: LAST_ID
     };
-
-    const first = {};
 
     this.stickBottom = true;
     this.getChatLogRef = el => this.chatLogRef = el;
@@ -76,7 +78,7 @@ class App extends Component {
   };
 
   handleScroll = () => {
-    console.log('handle scroll', this.chatLogRef.scrollTop + this.chatLogRef.clientHeight, this.chatLogRef.scrollHeight);
+    // console.log('handle scroll', this.chatLogRef.scrollTop + this.chatLogRef.clientHeight, this.chatLogRef.scrollHeight);
 
     if (this.chatLogRef.scrollTop + this.chatLogRef.clientHeight < this.chatLogRef.scrollHeight) {
       this.stickBottom = false;
@@ -85,29 +87,79 @@ class App extends Component {
       this.stickBottom = true;
     }
 
-    if (this.stickBottom) return;
+    console.log('handle scroll', this.stickBottom, this.state.loading);
 
-    const { log, firstId } = this.state;
-    const nextFirstId = Math.max(firstId - CHUNK_SIZE, 0);
-    const addedLog = {};
-    if (firstId > 0 && this.chatLogRef && this.chatLogRef.scrollTop <= 200) {
-      for (let i = firstId - 1; i >= nextFirstId; i--) {
-        addedLog[i] = generateLogItem(i);
-      }
-      this.setState({
-        log: {
-          ...log,
-          ...addedLog
-        },
-        firstId: nextFirstId
-      })
-    }
+    if (this.stickBottom || this.state.loading) return;
+
+    this.prependChunk();
   };
 
-  componentDidMount() {
+  handleImageLoad = () => {
     if (this.stickBottom) {
       this.chatLogRef.scrollTop = 1e20;
     }
+  };
+
+  prependChunk() {
+    let { log, firstId, lastId } = this.state;
+    let chunkSize = CHUNK_SIZE;
+
+    if (firstId === null) {
+      firstId = LAST_ID + 1;
+      lastId = LAST_ID;
+
+      this.setState({
+        lastId: LAST_ID
+      });
+
+      chunkSize = INITIAL_COUNT;
+    }
+
+    if (firstId > 0 && this.chatLogRef && this.chatLogRef.scrollTop <= 200) {
+      const nextFirstId = Math.max(firstId - chunkSize, 0);
+      const addedLog = {};
+
+      this.setState({ loading: true });
+
+      setTimeout(() => {
+        for (let i = firstId - 1; i >= nextFirstId; i--) {
+          addedLog[i] = generateLogItem(i);
+          // if (addedLog[i].type === 'image') {
+          //   promises.push(loadImg(addedLog[i]));
+          // }
+        }
+
+        this.setState({
+          log: {
+            ...log,
+            ...addedLog
+          },
+          firstId: nextFirstId,
+          loading: false
+        });
+        console.log('set loading', false);
+      }, 500);
+
+      // start loading images
+
+      // this.setState({
+      //   log: {
+      //     ...log,
+      //     ...addedLog
+      //   },
+      //   firstId: nextFirstId
+      // });
+    }
+  }
+
+  componentDidMount() {
+    const log = {};
+
+    console.log('did mount');
+
+    this.prependChunk();
+
+    this.chatLogRef.scrollTop = 1e20;
   }
 
   componentDidUpdate() {
@@ -116,25 +168,20 @@ class App extends Component {
     }
   }
 
-  handleImageLoad = () => {
-    if (this.stickBottom) {
-      this.chatLogRef.scrollTop = 1e20;
-    }
-  };
-
-  scrollToBottom() {
-
-  }
-
   render() {
-    const { log } = this.state;
+    const { log, loading } = this.state;
     const sortedLog = Object.keys(log).map(key => log[key]);
     sortedLog.sort((a, b) => a.ts - b.ts);
 
+    console.log('render', loading);
+
     return (
       <div className="ChatPanel">
-        <button onClick={this.resizeChatPanel} />
+        {/*<button onClick={this.resizeChatPanel} />*/}
         <div ref={this.getChatLogRef} className="ChatLog" onScroll={this.handleScroll}>
+          {/*<div>
+            <h1>loading...</h1>
+          </div>*/}
           {sortedLog.map(({ type, text, ts, src }) => {
             if (type === "text") {
               return <div key={ts} className="Item">{text}</div>;
