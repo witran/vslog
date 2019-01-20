@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import lorem from "./lorem";
 import "./App.css";
 
-console.log(lorem);
-
 const INITIAL_COUNT = 20;
 const LAST_ID = 100;
 const CHUNK_SIZE = 5;
@@ -28,7 +26,7 @@ function generateLogItem(id, _type) {
     ts: id,
     type,
     src: `/${100 + Math.floor(Math.random() * 200)}x${100 +
-      Math.floor(Math.random() * 200)}`,
+      Math.floor(Math.random() * 200)}/${500 + Math.floor(Math.random()) * 1000}`,
     text: id + "." + randomText()
   };
 }
@@ -78,7 +76,7 @@ class App extends Component {
   };
 
   handleScroll = () => {
-    console.log(this.chatLogRef.scrollTop, this.chatLogRef.clientHeight, this.chatLogRef.scrollHeight);
+    console.log('handle scroll', this.chatLogRef.scrollTop + this.chatLogRef.clientHeight, this.chatLogRef.scrollHeight);
 
     if (this.chatLogRef.scrollTop + this.chatLogRef.clientHeight < this.chatLogRef.scrollHeight) {
       this.stickBottom = false;
@@ -86,9 +84,9 @@ class App extends Component {
     else {
       this.stickBottom = true;
     }
-    // if (this.chatLogRef.scrollTop + this.chatLogRef.clientHeight)
+
     if (this.stickBottom) return;
-    console.log('handle scroll');
+
     const { log, firstId } = this.state;
     const nextFirstId = Math.max(firstId - CHUNK_SIZE, 0);
     const addedLog = {};
