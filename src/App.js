@@ -35,7 +35,9 @@ function loadImg() {
   const p = new Promise((resolve, reject) => {
 
   });
-  const img = window.createElement
+  const img = document.createElement('img');
+  img.onload = p.resolve(true);
+  img.onerror = p.resolve(false);
   return p;
 }
 
@@ -78,7 +80,11 @@ class App extends Component {
   };
 
   handleScroll = () => {
-    // console.log('handle scroll', this.chatLogRef.scrollTop + this.chatLogRef.clientHeight, this.chatLogRef.scrollHeight);
+    console.log('handle scroll', this.chatLogRef.scrollTop);
+    if (this.chatLogRef.scrollTop < 20) {
+      this.chatLogRef.scrollTop = 20;
+      return;
+    }
 
     if (this.chatLogRef.scrollTop + this.chatLogRef.clientHeight < this.chatLogRef.scrollHeight) {
       this.stickBottom = false;
@@ -86,8 +92,6 @@ class App extends Component {
     else {
       this.stickBottom = true;
     }
-
-    console.log('handle scroll', this.stickBottom, this.state.loading);
 
     if (this.stickBottom || this.state.loading) return;
 

@@ -4,7 +4,6 @@
 }
 
 .ChatLog {
-  /*width: 400px;*/
   overflow: auto;
   position: absolute;
   bottom: 100px;
@@ -12,26 +11,27 @@
   left: 0;
   right: 0;
   overflow: auto;
-  border: 1px solid grey;
 }
 
 .Composer {
-  /*width: 400px;*/
   height: 100px;
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   overflow: auto;
-  border: 1px solid grey;
 }
 
 .Item {
-  padding: 20px;
+  padding: 40px;
   text-align: left;
   background: #f0f0f0;
   border-bottom: 1px solid grey;
 }
+
+/*.Item:first-child {
+  padding-top: 150px;
+}*/
 
 img {
   border: 1px solid grey;
