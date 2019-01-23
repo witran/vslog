@@ -1,0 +1,61 @@
+.tabs a {
+	padding-left: 120px;
+	font-size: 20px;
+	line-height: 50px;
+}
+
+.tabs {
+	border-bottom: 1px solid grey;
+	height: 50px;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	z-index: 100;
+	background: white;
+}
+
+.ChatPanel {
+	display: flex;
+	flex-direction: column;
+}
+
+.ChatLog {
+	overflow: auto;
+	position: absolute;
+	bottom: 100px;
+	top: 50px;
+	left: 0;
+	right: 0;
+	overflow: auto;
+}
+
+.Composer {
+	border-top: 1px solid grey;
+	height: 100px;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	overflow: auto;
+}
+
+.Item {
+  padding: 40px;
+  text-align: left;
+  /*background: #f0f0f0;*/
+  border-bottom: 1px solid grey;
+}
+
+.Item img {
+  border: 1px solid grey;
+}
+
+.Composer button {
+  font-size: 36px;
+  margin: 10px;
+}
+
+.Item.ImageItem .Text{
+	padding-top: 10px;
+}

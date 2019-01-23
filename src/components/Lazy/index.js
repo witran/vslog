@@ -1,35 +1,10 @@
 import React, { Component } from "react";
-import lorem from "./lorem";
-import "./App.css";
+import { generateLogItem } from "../../utils/mock";
+import "./index.css";
 
 const INITIAL_COUNT = 20;
 const LAST_ID = 100;
 const CHUNK_SIZE = 5;
-
-function randomText() {
-  const len = 40 + Math.floor(Math.random() * 120);
-  const start = Math.floor(Math.random() * (lorem.length - len));
-  return lorem.slice(start, start + len);
-}
-
-function generateLogItem(id, _type) {
-  const type = _type ? _type : Math.random() > 0.5 ? "text" : "image";
-
-  if (type === "text") {
-    return {
-      ts: id,
-      type,
-      text: id + "." + randomText()
-    };
-  }
-  return {
-    ts: id,
-    type,
-    src: `/${100 + Math.floor(Math.random() * 200)}x${100 +
-      Math.floor(Math.random() * 200)}/${500 + Math.floor(Math.random()) * 1000}`,
-    text: id + "." + randomText()
-  };
-}
 
 function loadImg() {
   const p = new Promise((resolve, reject) => {
@@ -41,7 +16,7 @@ function loadImg() {
   return p;
 }
 
-class App extends Component {
+class index extends Component {
   constructor(props) {
     super(props);
 
@@ -49,8 +24,6 @@ class App extends Component {
       log: {},
       firstId: null,
       lastId: null
-      // firstId: LAST_ID - INITIAL_COUNT + 1,
-      // lastId: LAST_ID
     };
 
     this.stickBottom = true;
@@ -181,7 +154,6 @@ class App extends Component {
 
     return (
       <div className="ChatPanel">
-        {/*<button onClick={this.resizeChatPanel} />*/}
         <div ref={this.getChatLogRef} className="ChatLog" onScroll={this.handleScroll}>
           {/*<div>
             <h1>loading...</h1>
@@ -193,7 +165,7 @@ class App extends Component {
             return (
               <div key={ts} className="Item">
                 <img src={src} onLoad={this.handleImageLoad}/>
-                <div>{text}</div>
+                <div className="Text">{text}</div>
               </div>
             );
           })}
@@ -207,4 +179,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default index;
