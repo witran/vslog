@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import classNames from 'classnames';
 import Lazy from "../Lazy";
 import Virtual from "../Virtual";
+import VirtualPreload from "../VirtualPreload";
 import "./index.css";
 
 class App extends Component {
@@ -9,7 +10,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      view: "virtual"
+      view: "virtualPreload"
     };
   }
 
@@ -26,6 +27,7 @@ class App extends Component {
         <div className="tabs">
           <a
             href="#"
+            className={view === "lazy" ? "selected" : ""}
             onClick={() => {
               this.switchView("lazy");
             }}
@@ -34,6 +36,7 @@ class App extends Component {
           </a>
           <a
             href="#"
+            className={view === "virtual" ? "selected" : ""}
             onClick={() => {
               this.switchView("virtual");
             }}
@@ -42,16 +45,18 @@ class App extends Component {
           </a>
           <a
             href="#"
+            className={view === "virtualPreload" ? "selected" : ""}
             onClick={() => {
-              this.switchView("virtual");
+              this.switchView("virtualPreload");
             }}
           >
-            Virtual With Loader
+            Virtual + Preload
           </a>
         </div>
         <div>
           {view === "lazy" && <Lazy />}
           {view === "virtual" && <Virtual />}
+          {view === "virtualPreload" && <VirtualPreload />}
         </div>
       </div>
     );

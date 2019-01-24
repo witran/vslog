@@ -1,7 +1,18 @@
 .tabs a {
-	padding-left: 120px;
-	font-size: 20px;
-	line-height: 50px;
+	display: inline-block;
+	margin-left: 20px;
+	margin-top: 5px;
+	padding: 5px;
+	font-size: 24px;
+	border: 1px solid trasparent;
+	text-decoration: none;
+	border-radius: 4px;
+	color: black;
+}
+
+.tabs a.selected {
+	background: #eee;
+	border-color: grey;
 }
 
 .tabs {
@@ -23,25 +34,15 @@
 .ChatLog {
 	overflow: auto;
 	position: absolute;
-	bottom: 100px;
+	bottom: 50px;
 	top: 50px;
 	left: 0;
 	right: 0;
 	overflow: auto;
 }
 
-.Composer {
-	border-top: 1px solid grey;
-	height: 100px;
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	overflow: auto;
-}
-
 .Item {
-  padding: 40px;
+  padding: 20px;
   text-align: left;
   /*background: #f0f0f0;*/
   border-bottom: 1px solid grey;
@@ -51,11 +52,23 @@
   border: 1px solid grey;
 }
 
-.Composer button {
-  font-size: 36px;
-  margin: 10px;
-}
-
 .Item.ImageItem .Text{
 	padding-top: 10px;
+}
+
+
+.Composer {
+	border-top: 1px solid grey;
+	height: 50px;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	overflow: auto;
+}
+
+.Composer button {
+  font-size: 24px;
+  margin-left: 20px;
+  margin-top: 10px;
 }
