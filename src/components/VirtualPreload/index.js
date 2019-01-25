@@ -8,6 +8,7 @@ import {
 import { generateLogItem } from "../../utils/mock";
 
 const STICK_BOTTOM_THRESHOLD = 0;
+const LOG_COUNT = 100;
 
 function loadImg(src, id) {
   const p = new Promise((resolve, reject) => {
@@ -17,7 +18,6 @@ function loadImg(src, id) {
     img.style.zIndex = -1;
     document.body.appendChild(img);
     img.onload = () => {
-      console.log(img);
       resolve({ id, width: img.clientWidth, height: img.clientHeight });
     };
     img.onerror = () => {
@@ -32,58 +32,68 @@ export default class Virtual extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
 
-    this._cache = new CellMeasurerCache({
-      fixedWidth: true,
-      minHeight: 50
-    });
+    this._rowRenderer = this._rowRenderer.bind(this);
+    window.onresize = this.handleResize;
 
     this.imgRefs = {};
-
-    this._rowRenderer = this._rowRenderer.bind(this);
     this.updateListRef = el => (this.listRef = el);
     this.updateImgRef = (el, index) => (this.imgRefs[index] = el);
+    this.unmeasuredLog = {};
 
-    const log = {};
-    this.promises = [];
-
-    for (let i = 0; i < 100; i++) {
-      log[i] = generateLogItem(i);
+    this.log = {};
+    for (let i = 0; i < LOG_COUNT; i++) {
+      this.log[i] = generateLogItem(i);
     }
+    this.lastMeasuredLog = LOG_COUNT;
+    this._cache = new CellMeasurerCache({
+      fixedWidth: false,
+      minHeight: 50
+    });
+    this.state = { log: {} };
+    this.firstScroll = true;
+    this.stickBottom = true;
+    this.measureAndTransferLog();
+  }
 
-    for (let i = 99; i >= 0; i--) {
-      if (log[i].type === "image") {
-        promises.push(loadImg(log[i].src, i));
+  measureAndTransferLog = () => {
+    if (this.lastMeasuredLog === 0) return;
+    const promises = [];
+    const nextLastMeasuredLog = Math.max(this.lastMeasuredLog - 20, 0);
+
+    console.log(nextLastMeasuredLog, this.lastMeasuredLog);
+
+    const newLog = {};
+    for (let i = this.lastMeasuredLog - 1; i >= nextLastMeasuredLog; i--) {
+      newLog[i] = this.log[i];
+      if (this.log[i].type === "image") {
+        promises.push(loadImg(this.log[i].src, i));
       }
     }
 
-    this.startBackgroundImageLoading();
+    console.log("m & t", JSON.stringify(newLog, null, 2));
 
     Promise.all(promises).then(data => {
       data.forEach(({ id, width, height }) => {
-        console.log(id, width, height);
-        log[id].width = width;
-        log[id].height = height;
+        newLog[id].width = width;
+        newLog[id].height = height;
       });
+
+      this.lastMeasuredLog = nextLastMeasuredLog;
       this._cache.clearAll();
-      this.setState({ loading: false });
+      this.setState({
+        log: {
+          ...this.state.log,
+          ...newLog
+        },
+      });
       this.listRef && this.listRef.forceUpdateGrid();
+      this.measureAndTransferLog();
     });
-
-    this.state = { log, loading: true };
-    this.firstScroll = true;
-
-    window.onresize = this.handleResize;
-
-    this.stickBottom = true;
-  }
-
-  handleImageLoaded = (firstId, lastId) => {
-    // prepend log
-
   };
 
   handleResize = () => {
     console.log("handle resize");
+
     this._cache.clearAll();
 
     setTimeout(() => {
@@ -100,7 +110,9 @@ export default class Virtual extends React.PureComponent {
       this.firstScroll = false;
       return;
     }
+
     console.log("handle scroll", scrollHeight - (clientHeight + scrollTop));
+
     this.updateStickBottom({ clientHeight, scrollHeight, scrollTop });
   };
 
@@ -110,12 +122,15 @@ export default class Virtual extends React.PureComponent {
     } else {
       this.stickBottom = false;
     }
+
     console.log("updated this.stickBottom", this.stickBottom);
   };
 
   render() {
-    if (this.state.loading) return <div>Loading...</div>;
-    console.log("render stick bottom", this.stickBottom);
+    {/*if (this.state.loading) return <div>Loading...</div>;*/}
+
+    console.log("render() stick bottom", this.stickBottom);
+
     return (
       <div className="ChatPanel">
         <div className="ChatLog">
@@ -127,7 +142,7 @@ export default class Virtual extends React.PureComponent {
                 width={width}
                 height={height}
                 overscanRowCount={0}
-                rowCount={100}
+                rowCount={Object.keys(this.state.log).length}
                 rowHeight={this._cache.rowHeight}
                 rowRenderer={this._rowRenderer}
                 scrollToIndex={
@@ -148,18 +163,21 @@ export default class Virtual extends React.PureComponent {
     );
   }
 
-  _rowRenderer({ index, key, parent, style }) {
-    const { type, ts, text, src, width, height } = this.state.log[
-      index
-    ];
+  _rowRenderer = ({ index, key, parent, style }) => {
+    const item = this.state.log[index];
 
-    if (this.state.loading && )
+    if (!item) return null;
+
+    const { type, ts, text, src, width, height } = this.state.log[
+      index + this.lastMeasuredLog
+      // index
+    ];
 
     return (
       <CellMeasurer
         cache={this._cache}
         columnIndex={0}
-        key={key}
+        key={ts}
         rowIndex={index}
         parent={parent}
       >
@@ -192,5 +210,5 @@ export default class Virtual extends React.PureComponent {
         )}
       </CellMeasurer>
     );
-  }
+  };
 }

@@ -25,7 +25,7 @@ class App extends Component {
     return (
       <div className="ChatPanel">
         <div className="tabs">
-          <a
+          {/*<a
             href="#"
             className={view === "lazy" ? "selected" : ""}
             onClick={() => {
@@ -42,7 +42,7 @@ class App extends Component {
             }}
           >
             Virtual
-          </a>
+          </a>*/}
           <a
             href="#"
             className={view === "virtualPreload" ? "selected" : ""}
