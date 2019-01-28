@@ -4,7 +4,7 @@
 	margin-top: 5px;
 	padding: 5px;
 	font-size: 24px;
-	border: 1px solid trasparent;
+	border: 1px solid transparent;
 	text-decoration: none;
 	border-radius: 4px;
 	color: black;
@@ -44,18 +44,21 @@
 .Item {
   padding: 20px;
   text-align: left;
-  /*background: #f0f0f0;*/
-  border-bottom: 1px solid grey;
+  border: 1px solid grey;
+  /*border-bottom-color: grey;*/
 }
 
 .Item img {
   border: 1px solid grey;
 }
 
+.Item.LastItem {
+	/*border-bottom: none;*/
+}
+
 .Item.ImageItem .Text{
 	padding-top: 10px;
 }
-
 
 .Composer {
 	border-top: 1px solid grey;

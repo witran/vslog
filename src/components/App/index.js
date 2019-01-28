@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import classNames from 'classnames';
+import Base from "../Base";
 import Lazy from "../Lazy";
 import Virtual from "../Virtual";
 import VirtualPreload from "../VirtualPreload";
@@ -10,7 +10,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      view: "virtualPreload"
+      view: "virtual"
     };
   }
 
@@ -25,6 +25,15 @@ class App extends Component {
     return (
       <div className="ChatPanel">
         <div className="tabs">
+          <a
+            href="#"
+            className={view === "base" ? "selected" : ""}
+            onClick={() => {
+              this.switchView("base");
+            }}
+          >
+            Base
+          </a>
           {/*<a
             href="#"
             className={view === "lazy" ? "selected" : ""}
@@ -33,7 +42,7 @@ class App extends Component {
             }}
           >
             Lazy
-          </a>
+          </a>*/}
           <a
             href="#"
             className={view === "virtual" ? "selected" : ""}
@@ -42,18 +51,19 @@ class App extends Component {
             }}
           >
             Virtual
-          </a>*/}
-          <a
+          </a>
+          {/*<a
             href="#"
             className={view === "virtualPreload" ? "selected" : ""}
             onClick={() => {
               this.switchView("virtualPreload");
             }}
           >
-            Virtual + Preload
-          </a>
+            Virtual + Preload Images
+          </a>*/}
         </div>
         <div>
+          {view === "base" && <Base />}
           {view === "lazy" && <Lazy />}
           {view === "virtual" && <Virtual />}
           {view === "virtualPreload" && <VirtualPreload />}

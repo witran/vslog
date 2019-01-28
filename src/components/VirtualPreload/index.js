@@ -9,6 +9,7 @@ import { generateLogItem } from "../../utils/mock";
 
 const STICK_BOTTOM_THRESHOLD = 0;
 const LOG_COUNT = 100;
+const BATCH = 10;
 
 function loadImg(src, id) {
   const p = new Promise((resolve, reject) => {
@@ -28,7 +29,7 @@ function loadImg(src, id) {
   return p;
 }
 
-export default class Virtual extends React.PureComponent {
+export default class VirtualPreload extends React.PureComponent {
   constructor(props, context) {
     super(props, context);
 
@@ -43,6 +44,9 @@ export default class Virtual extends React.PureComponent {
     this.log = {};
     for (let i = 0; i < LOG_COUNT; i++) {
       this.log[i] = generateLogItem(i);
+      if (i === 99) {
+        this.log[i] = generateLogItem(i, 'image');
+      }
     }
     this.lastMeasuredLog = LOG_COUNT;
     this._cache = new CellMeasurerCache({
@@ -52,13 +56,13 @@ export default class Virtual extends React.PureComponent {
     this.state = { log: {} };
     this.firstScroll = true;
     this.stickBottom = true;
-    this.measureAndTransferLog();
+    this.measureAndPrepend();
   }
 
-  measureAndTransferLog = () => {
+  measureAndPrepend = () => {
     if (this.lastMeasuredLog === 0) return;
     const promises = [];
-    const nextLastMeasuredLog = Math.max(this.lastMeasuredLog - 20, 0);
+    const nextLastMeasuredLog = Math.max(this.lastMeasuredLog - BATCH, 0);
 
     console.log(nextLastMeasuredLog, this.lastMeasuredLog);
 
@@ -70,7 +74,7 @@ export default class Virtual extends React.PureComponent {
       }
     }
 
-    console.log("m & t", JSON.stringify(newLog, null, 2));
+    console.log(JSON.stringify(newLog, null, 2));
 
     Promise.all(promises).then(data => {
       data.forEach(({ id, width, height }) => {
@@ -87,7 +91,7 @@ export default class Virtual extends React.PureComponent {
         },
       });
       this.listRef && this.listRef.forceUpdateGrid();
-      this.measureAndTransferLog();
+      this.measureAndPrepend();
     });
   };
 
@@ -114,6 +118,7 @@ export default class Virtual extends React.PureComponent {
     console.log("handle scroll", scrollHeight - (clientHeight + scrollTop));
 
     this.updateStickBottom({ clientHeight, scrollHeight, scrollTop });
+    this.updateAnchorRow();
   };
 
   updateStickBottom = ({ clientHeight, scrollHeight, scrollTop }) => {
@@ -126,10 +131,12 @@ export default class Virtual extends React.PureComponent {
     console.log("updated this.stickBottom", this.stickBottom);
   };
 
-  render() {
-    {/*if (this.state.loading) return <div>Loading...</div>;*/}
+  updateAnchorRow = () => {
 
-    console.log("render() stick bottom", this.stickBottom);
+  };
+
+  render() {
+    console.log("render() stick bottom", Object.keys(this.state.log).length);
 
     return (
       <div className="ChatPanel">
@@ -197,6 +204,7 @@ export default class Virtual extends React.PureComponent {
                   }}
                 >
                   <img
+                    alt="img"
                     ref={el => {
                       this.updateImgRef(el, index);
                     }}

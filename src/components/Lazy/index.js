@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import classNames from "classnames";
 import { generateLogItem } from "../../utils/mock";
 import "./index.css";
 
@@ -7,16 +8,14 @@ const LAST_ID = 100;
 const CHUNK_SIZE = 5;
 
 function loadImg() {
-  const p = new Promise((resolve, reject) => {
-
-  });
-  const img = document.createElement('img');
+  const p = new Promise((resolve, reject) => {});
+  const img = document.createElement("img");
   img.onload = p.resolve(true);
   img.onerror = p.resolve(false);
   return p;
 }
 
-class index extends Component {
+class Lazy extends Component {
   constructor(props) {
     super(props);
 
@@ -27,7 +26,7 @@ class index extends Component {
     };
 
     this.stickBottom = true;
-    this.getChatLogRef = el => this.chatLogRef = el;
+    this.getChatLogRef = el => (this.chatLogRef = el);
   }
 
   addText = () => {
@@ -35,7 +34,7 @@ class index extends Component {
     this.setState({
       log: {
         ...this.state.log,
-        [lastId + 1]: generateLogItem(lastId + 1, 'text')
+        [lastId + 1]: generateLogItem(lastId + 1, "text")
       },
       lastId: lastId + 1
     });
@@ -46,23 +45,25 @@ class index extends Component {
     this.setState({
       log: {
         ...log,
-        [lastId + 1]: generateLogItem(lastId + 1, 'image')
+        [lastId + 1]: generateLogItem(lastId + 1, "image")
       },
       lastId: lastId + 1
     });
   };
 
   handleScroll = () => {
-    console.log('handle scroll', this.chatLogRef.scrollTop);
+    console.log("handle scroll", this.chatLogRef.scrollTop);
     if (this.chatLogRef.scrollTop < 20) {
       this.chatLogRef.scrollTop = 20;
       return;
     }
 
-    if (this.chatLogRef.scrollTop + this.chatLogRef.clientHeight < this.chatLogRef.scrollHeight) {
+    if (
+      this.chatLogRef.scrollTop + this.chatLogRef.clientHeight <
+      this.chatLogRef.scrollHeight
+    ) {
       this.stickBottom = false;
-    }
-    else {
+    } else {
       this.stickBottom = true;
     }
 
@@ -114,7 +115,7 @@ class index extends Component {
           firstId: nextFirstId,
           loading: false
         });
-        console.log('set loading', false);
+        console.log("set loading", false);
       }, 500);
 
       // start loading images
@@ -132,7 +133,7 @@ class index extends Component {
   componentDidMount() {
     const log = {};
 
-    console.log('did mount');
+    console.log("did mount");
 
     this.prependChunk();
 
@@ -150,21 +151,34 @@ class index extends Component {
     const sortedLog = Object.keys(log).map(key => log[key]);
     sortedLog.sort((a, b) => a.ts - b.ts);
 
-    console.log('render', loading);
+    console.log("render", loading);
 
     return (
       <div className="ChatPanel">
-        <div ref={this.getChatLogRef} className="ChatLog" onScroll={this.handleScroll}>
+        <div
+          ref={this.getChatLogRef}
+          className="ChatLog"
+          onScroll={this.handleScroll}
+        >
           {/*<div>
             <h1>loading...</h1>
           </div>*/}
           {sortedLog.map(({ type, text, ts, src }) => {
             if (type === "text") {
-              return <div key={ts} className="Item">{text}</div>;
+              return (
+                <div key={ts} className="Item">
+                  {text}
+                </div>
+              );
             }
             return (
-              <div key={ts} className="Item">
-                <img src={src} onLoad={this.handleImageLoad}/>
+              <div
+                key={ts}
+                className={classNames("Item", {
+                  LastItem: ts === Object.keys(this.state.log).length - 1
+                })}
+              >
+                <img src={src} onLoad={this.handleImageLoad} />
                 <div className="Text">{text}</div>
               </div>
             );
@@ -179,4 +193,4 @@ class index extends Component {
   }
 }
 
-export default index;
+export default Lazy;

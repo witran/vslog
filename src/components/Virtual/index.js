@@ -1,4 +1,5 @@
 import * as React from "react";
+import classNames from "classnames";
 import {
   CellMeasurer,
   CellMeasurerCache,
@@ -8,37 +9,33 @@ import {
 import { generateLogItem } from "../../utils/mock";
 
 const STICK_BOTTOM_THRESHOLD = 0;
+const LOG_COUNT = 10000;
 
-function loadImg() {
-  const p = new Promise();
-  const img = document.createElement('img');
-  img.onload = p.resolve(true);
-  img.onerror = p.resolve(false);
-  return p;
-}
-
-export default class Virtual extends React.PureComponent {
+export default class Virtual extends React.Component {
   constructor(props, context) {
     super(props, context);
 
     this._cache = new CellMeasurerCache({
-      fixedWidth: false,
-      minHeight: 50
+      fixedWidth: true
     });
+    this._imgCache = {};
 
     this.imgRefs = {};
 
     this._rowRenderer = this._rowRenderer.bind(this);
-    this.updateListRef = el => this.listRef = el;
-    this.updateImgRef = (el, index) => this.imgRefs[index] = el;
+    this.updateListRef = el => (this.listRef = el);
+    this.updateImgRef = (el, index) => (this.imgRefs[index] = el);
 
     const log = {};
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < LOG_COUNT; i++) {
       log[i] = generateLogItem(i);
+      if (i === LOG_COUNT - 1) {
+        log[i] = generateLogItem(i, "image");
+      }
     }
 
-    this.state = { log, loading: true };
+    this.state = { log, length: LOG_COUNT, lastId: LOG_COUNT - 1 };
     this.firstScroll = true;
 
     window.onresize = this.handleResize;
@@ -46,40 +43,63 @@ export default class Virtual extends React.PureComponent {
     this.stickBottom = true;
   }
 
-  handleResize = () => {
-    console.log('handle resize');
-    this._cache.clearAll();
+  addText = () => {
+    const { log, lastId } = this.state;
+    this.setState({
+      log: {
+        ...log,
+        [lastId + 1]: generateLogItem(lastId + 1, "text")
+      },
+      lastId: lastId + 1
+    });
+  };
+
+  addImage = () => {
+    const { log, lastId } = this.state;
+    this.setState({
+      log: {
+        ...log,
+        [lastId + 1]: generateLogItem(lastId + 1, "image")
+      },
+      lastId: lastId + 1
+    });
+  };
+
+  handleResize = id => {
+    console.log("handle resize");
 
     setTimeout(() => {
+      this._cache.clearAll();
       this.listRef && this.listRef.forceUpdateGrid();
 
       if (this.stickBottom) {
-        this.listRef.scrollToRow(Object.keys(this.state.log).length - 1);
+        this.listRef && this.listRef.scrollToRow(this.state.length - 1);
       }
     });
   };
 
   handleImageLoad = (e, id) => {
-    this.state.log[id].measured = true;
-    this.state.log[id].width = this.imgRefs[id].clientWidth;
-    this.state.log[id].height = this.imgRefs[id].clientHeight;
+    this._imgCache[id] = {
+      width: this.imgRefs[id].clientWidth,
+      height: this.imgRefs[id].clientHeight
+    };
 
     setTimeout(() => {
+      this._cache.clearAll();
       this.listRef && this.listRef.forceUpdateGrid();
 
       if (this.stickBottom) {
-        this.listRef.scrollToRow(Object.keys(this.state.log).length - 1);
+        this.listRef && this.listRef.scrollToRow(this.state.length - 1);
       }
     });
-    console.log('image load', e, this.state.log[id].width, this.state.log[id].height);
-  }
+  };
 
   handleScroll = ({ clientHeight, scrollHeight, scrollTop }) => {
     if (this.firstScroll) {
       this.firstScroll = false;
       return;
     }
-    console.log('handle scroll', scrollHeight - (clientHeight + scrollTop));
+    console.log("handle scroll", scrollHeight - (clientHeight + scrollTop));
     this.updateStickBottom({ clientHeight, scrollHeight, scrollTop });
   };
 
@@ -89,11 +109,11 @@ export default class Virtual extends React.PureComponent {
     } else {
       this.stickBottom = false;
     }
-    console.log('updated this.stickBottom', this.stickBottom);
+    console.log("updated this.stickBottom", this.stickBottom);
   };
 
   render() {
-    console.log('render stick bottom', this.stickBottom);
+    console.log("render stick bottom", this.stickBottom);
     return (
       <div className="ChatPanel">
         <div className="ChatLog">
@@ -105,10 +125,12 @@ export default class Virtual extends React.PureComponent {
                 width={width}
                 height={height}
                 overscanRowCount={0}
-                rowCount={100}
+                rowCount={this.state.length}
                 rowHeight={this._cache.rowHeight}
                 rowRenderer={this._rowRenderer}
-                scrollToIndex={this.stickBottom ? Object.keys(this.state.log).length - 1 : undefined}
+                scrollToIndex={
+                  this.stickBottom ? this.state.length - 1 : undefined
+                }
                 onScroll={this.handleScroll}
               />
             )}
@@ -123,7 +145,10 @@ export default class Virtual extends React.PureComponent {
   }
 
   _rowRenderer({ index, key, parent, style }) {
-    const { type, ts, text, src, measured, width, height } = this.state.log[index];
+    const { type, ts, text, src } = this.state.log[index];
+    const measured = this._imgCache[index] ? true : false;
+    const imgSize = this._imgCache[index] || {};
+    const { imgWidth, imgHeight } = imgSize;
 
     return (
       <CellMeasurer
@@ -136,20 +161,43 @@ export default class Virtual extends React.PureComponent {
         {({ measure }) => (
           <div style={style}>
             {type === "text" && (
-              <div key={ts} className="Item">
+              <div
+                key={ts}
+                className={classNames("Item", {
+                  LastItem: index === this.state.length - 1
+                })}
+              >
                 {text}
               </div>
             )}
             {type === "image" && (
-              <div key={ts} className="Item ImageItem">
-                <div style={{
-                  width: measured ? width + 'px' : '',
-                  height: measured ? height + 'px' : ''
-                }}>
-                  <img ref={(el) => { this.updateImgRef(el, index) }} src={src} onLoad={!measured ? (e) => {
-                    this.handleImageLoad(e, index);
-                    measure(e);
-                  } : undefined} />
+              <div
+                key={ts}
+                className={classNames("Item ImageItem", {
+                  LastItem: index === this.state.length - 1
+                })}
+              >
+                <div
+                  style={{
+                    width: measured ? imgWidth + "px" : "",
+                    height: measured ? imgHeight + 2 + "px" : ""
+                  }}
+                >
+                  <img
+                    ref={el => {
+                      this.updateImgRef(el, index);
+                    }}
+                    alt="img"
+                    src={src}
+                    onLoad={
+                      !measured
+                        ? e => {
+                            measure(e);
+                            this.handleImageLoad(e, index);
+                          }
+                        : undefined
+                    }
+                  />
                 </div>
                 <div className="Text">{text}</div>
               </div>
